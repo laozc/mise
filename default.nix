@@ -1,4 +1,4 @@
-{ pkgs, lib, stdenv, fetchFromGitHub, rustPlatform, coreutils, bash, direnv, openssl }:
+{ pkgs, lib, stdenv, fetchFromGitHub, rustPlatform, coreutils, bash, direnv, openssl, git }:
 
 rustPlatform.buildRustPackage {
   pname = "mise";
@@ -24,22 +24,23 @@ rustPlatform.buildRustPackage {
   prePatch = ''
     substituteInPlace ./test/data/plugins/**/bin/* \
       --replace '#!/usr/bin/env bash' '#!${bash}/bin/bash'
-    substituteInPlace ./src/fake_asdf.rs ./src/cli/reshim.rs \
+    substituteInPlace ./src/fake_asdf.rs \
       --replace '#!/bin/sh' '#!${bash}/bin/sh'
     substituteInPlace ./src/env_diff.rs \
       --replace '"bash"' '"${bash}/bin/bash"'
-    substituteInPlace ./test/cwd/.mise/tasks/filetask \
-      --replace '#!/usr/bin/env bash' '#!${bash}/bin/bash'
     substituteInPlace ./src/cli/direnv/exec.rs \
       --replace '"env"' '"${coreutils}/bin/env"' \
       --replace 'cmd!("direnv"' 'cmd!("${direnv}/bin/direnv"'
+    substituteInPlace ./src/test.rs \
+      --replace '"git"' '"${git}/bin/git"' \
+      --replace '/usr/bin/env bash' '${bash}/bin/bash'
   '';
 
   # Skip the test_plugin_list_urls as it uses the .git folder, which
   # is excluded by default from Nix.
   checkPhase = ''
     RUST_BACKTRACE=full cargo test --all-features -- \
-      --skip cli::plugins::ls::tests::test_plugin_list_urls
+      --skip cli::plugins::ls::tests::test_plugin_list_urls \
   '';
 
   meta = with lib; {
