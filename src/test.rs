@@ -196,7 +196,9 @@ pub fn cli_run(args: &Vec<String>) -> eyre::Result<(String, String)> {
     env::ARGS.write().unwrap().clone_from(args);
     STDOUT.lock().unwrap().clear();
     STDERR.lock().unwrap().clear();
+    print!("Cli::run before\n");
     Cli::run(args).with_section(|| format!("{}", args.join(" ").header("Command:")))?;
+    print!("Cli::run after\n");
     let stdout = clean_output(STDOUT.lock().unwrap().join("\n"));
     let stderr = clean_output(STDERR.lock().unwrap().join("\n"));
 

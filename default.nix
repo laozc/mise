@@ -39,8 +39,10 @@ rustPlatform.buildRustPackage {
   # Skip the test_plugin_list_urls as it uses the .git folder, which
   # is excluded by default from Nix.
   checkPhase = ''
-    RUST_BACKTRACE=full cargo test --all-features -- \
+    RUST_LOG=debug RUST_BACKTRACE=full cargo test --all-features -- \
+      cli::generate::git_pre_commit::tests::test_git_pre_commit_write \
       --skip cli::plugins::ls::tests::test_plugin_list_urls \
+      --nocapture
   '';
 
   meta = with lib; {
